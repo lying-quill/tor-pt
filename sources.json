@@ -1,0 +1,65 @@
+[
+  {
+    "name": "snowflake",
+    "src": "https://gitlab.torproject.org/tpo/anti-censorship/pluggable-transports/snowflake.git",
+    "tag": "v2.14.1",
+    "build": {
+      "script": [
+        "export CGO_ENABLED=0",
+        "go build -trimpath -buildvcs=false -ldflags='-s -w' -o snowflake-client ./client",
+        "go build -trimpath -buildvcs=false -ldflags='-s -w' -o snowflake-server ./server"
+      ],
+      "outputs": [
+        "snowflake-client",
+        "snowflake-server"
+      ]
+    }
+  },
+  {
+    "name": "lyrebird",
+    "src": "https://gitlab.torproject.org/tpo/anti-censorship/pluggable-transports/lyrebird.git",
+    "tag": "lyrebird-0.8.1",
+    "build": {
+      "script": [
+        "make build"
+      ],
+      "outputs": [
+        "lyrebird"
+      ]
+    }
+  },
+  {
+    "name": "meek",
+    "src": "https://gitlab.torproject.org/tpo/anti-censorship/pluggable-transports/meek.git",
+    "tag": "v0.38.0",
+    "build": {
+      "script": [
+        "export CGO_ENABLED=0",
+        "mv meek-client{,-src}",
+        "mv meek-server{,-src}",
+        "go build -trimpath -buildvcs=false -ldflags='-s -w' -o meek-client ./meek-client-src",
+        "go build -trimpath -buildvcs=false -ldflags='-s -w' -o meek-server ./meek-server-src"
+      ],
+      "outputs": [
+        "meek-client",
+        "meek-server"
+      ]
+    }
+  },
+  {
+    "name": "webtunnel",
+    "src": "https://gitlab.torproject.org/tpo/anti-censorship/pluggable-transports/webtunnel.git",
+    "tag": "v0.0.7",
+    "build": {
+      "script": [
+        "export CGO_ENABLED=0",
+        "go build -trimpath -buildvcs=false -ldflags='-s -w' -o webtunnel-client ./main/client",
+        "go build -trimpath -buildvcs=false -ldflags='-s -w' -o webtunnel-server ./main/server"
+      ],
+      "outputs": [
+        "webtunnel-client",
+        "webtunnel-server"
+      ]
+    }
+  }
+]

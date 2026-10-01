@@ -1,0 +1,142 @@
+name: Build sources
+
+on:
+  push:
+    tags:
+      - "v*"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  define-matrix:
+    name: Read sources.json
+    runs-on: ubuntu-latest
+    outputs:
+      sources: ${{ steps.sources.outputs.sources }}
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v6
+
+      - name: Validate sources.json
+        id: sources
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          jq -e '
+            type == "array" and
+            all(.[]?;
+              (.name | type == "string") and
+              (.src | type == "string") and
+              (.tag | type == "string") and
+              (.build.script | type == "array") and
+              (.build.outputs | type == "array")
+            )
+          ' sources.json >/dev/null
+
+          echo "sources=$(jq -c . sources.json)" >> "$GITHUB_OUTPUT"
+
+  build:
+    name: Build ${{ matrix.source.name }}
+    needs: define-matrix
+    runs-on: ubuntu-latest
+
+    strategy:
+      fail-fast: false
+      matrix:
+        source: ${{ fromJSON(needs.define-matrix.outputs.sources) }}
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v6
+
+      - name: Set up Go
+        uses: actions/setup-go@v6
+        with:
+          go-version: stable
+          cache: true
+
+      - name: Build source and create tarball
+        env:
+          SOURCE_JSON: ${{ toJSON(matrix.source) }}
+        run: |
+          chmod +x .github/scripts/build-source.sh
+          .github/scripts/build-source.sh
+
+      - name: Upload release tarball
+        uses: actions/upload-artifact@v7
+        with:
+          name: ${{ matrix.source.name }}-release
+          path: .release/${{ matrix.source.name }}-*.tar.gz
+          if-no-files-found: error
+          include-hidden-files: true
+
+  release:
+    name: Create GitHub release
+    needs: build
+    if: ${{ github.ref_type == 'tag' }}
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: write
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v6
+
+      - name: Download release tarballs
+        uses: actions/download-artifact@v5
+        with:
+          pattern: "*-release"
+          path: .release
+          merge-multiple: true
+
+      - name: Generate SHA256 checksums
+        shell: bash
+        run: |
+          cd .release
+          sha256sum ./*.tar.gz > SHA256SUMS
+          cat SHA256SUMS
+
+      - name: Generate unified PKGBUILD
+        shell: bash
+        env:
+          REPOSITORY: ${{ github.repository }}
+          RELEASE_TAG: ${{ github.ref_name }}
+          OUTPUT: .release/PKGBUILD
+        run: |
+          chmod +x .github/scripts/make-pkgbuild.sh
+          .github/scripts/make-pkgbuild.sh
+          cat .release/PKGBUILD
+
+      - name: Create GitHub release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          mapfile -t release_files < <(
+            find .release \
+              -maxdepth 1 \
+              -type f \
+              \( \
+                -name '*.tar.gz' \
+                -o -name 'SHA256SUMS' \
+                -o -name 'PKGBUILD' \
+              \) \
+              -print |
+              sort
+          )
+
+          printf 'Uploading release files:\n'
+          printf '  %s\n' "${release_files[@]}"
+
+          gh release create "$GITHUB_REF_NAME" \
+            --verify-tag \
+            --title "$GITHUB_REF_NAME" \
+            --generate-notes \
+            "${release_files[@]}"
