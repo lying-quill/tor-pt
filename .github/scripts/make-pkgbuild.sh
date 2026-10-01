@@ -73,11 +73,11 @@ EOF
 )
 
 package() {
-  install -dm755 "$pkgdir/usr/lib/tor-pt"
+  install -dm755 "$pkgdir/usr/local/lib/tor-pt"
 
   while IFS= read -r -d '' file; do
     filename="$(basename "$file")"
-    destination="$pkgdir/usr/lib/tor-pt/$filename"
+    destination="$pkgdir/usr/local/lib/tor-pt/$filename"
 
     if [[ -e "$destination" ]]; then
       printf 'error: duplicate transport filename: %s\n' "$filename" >&2
