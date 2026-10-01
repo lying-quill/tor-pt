@@ -19,6 +19,8 @@ Required tools:
 
 - [shellcheck](https://github.com/koalaman/shellcheck) (>=0.10.0)
 - [shfmt](https://github.com/mvdan/sh) (>=3.13.1)
+- [jq](https://github.com/jqlang/jq) (>=1.8.2)
+- [GNU Make](https://www.gnu.org/software/make/) (>=4.4.1)
 
 Run the following command to setup the development tools:
 ```sh
