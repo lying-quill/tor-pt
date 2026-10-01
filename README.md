@@ -1,13 +1,12 @@
 # tor-pt
-This is a semi-automated repo that takes certain tor pluggable transports,
-builds them and publishes them as a github release.
+This semi-automated repository builds certain Tor pluggable transports and
+publishes them as a GitHub release.
 
-sources are specified in [json file](./sources.json) along with their repository
-url and the tagged version.
+Sources are specified in the [JSON file](./sources.json), along with their
+repository URLs and tagged versions.
 
-the workflow also produces a pacman `PKGBUILD` file assists in installing it as
-a package:
-
+The workflow also produces a pacman `PKGBUILD` file to assist with installing
+the transports as a package:
 ```sh
 tmpdir="$(mktemp -d)"
 cd "$tmpdir"
@@ -17,15 +16,16 @@ makepkg -si
 
 ## Development
 Required tools:
+
 - [shellcheck](https://github.com/koalaman/shellcheck) (>=0.10.0)
 - [shfmt](https://github.com/mvdan/sh) (>=3.13.1)
 
-run this command to register the git hook and run a version check for the
-aforementioned tools:
+Run the following command to setup the development tools:
 ```sh
 make dev
 ```
 
 ## License
-Currently licensed under the [MIT license](https://mit-license.org/).
-There's a copy of the [license](LICENSE) available along with the source code.
+This project is currently licensed under the
+[MIT License](https://mit-license.org/).
+A copy of the [license](LICENSE) is included with the source code.
