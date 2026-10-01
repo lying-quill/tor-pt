@@ -11,11 +11,13 @@ permissions:
 jobs:
   ci:
     runs-on: ubuntu-latest
-    container:
-      image: alpine:latest
     steps:
       - uses: actions/checkout@v5
+
       - name: Install dependencies
-        run: apk add --no-cache make shellcheck shfmt
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y jq make shellcheck shfmt
+
       - name: Run CI
         run: make ci
