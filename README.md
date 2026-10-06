@@ -8,8 +8,7 @@ repository URLs and tagged versions.
 The workflow also produces a pacman `PKGBUILD` file to assist with installing
 the transports as a package:
 ```sh
-tmpdir="$(mktemp -d)"
-cd "$tmpdir"
+cd $(mktemp -d)
 curl -fLO https://github.com/lying-quill/tor-pt/releases/latest/download/PKGBUILD
 makepkg -si
 ```
